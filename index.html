@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簿記3級 過去問対策アプリ</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>簿記3級 過去問対策アプリ</h1>
+            <div class="stats">
+                <span id="totalQuestions">全問題数: 0</span>
+                <span id="correctAnswers">正解数: 0</span>
+                <span id="accuracy">正答率: 0%</span>
+            </div>
+        </header>
+
+        <main>
+            <div id="startScreen" class="screen active">
+                <h2>問題を選択してください</h2>
+                <div class="category-buttons">
+                    <button onclick="startQuiz('all')" class="btn btn-primary">全範囲から出題</button>
+                    <button onclick="startQuiz('journal')" class="btn">仕訳問題</button>
+                    <button onclick="startQuiz('calculation')" class="btn">計算問題</button>
+                    <button onclick="startQuiz('financial')" class="btn">財務諸表</button>
+                    <button onclick="startQuiz('term')" class="btn">用語問題</button>
+                </div>
+                <div class="history-section">
+                    <h3>学習履歴</h3>
+                    <div id="studyHistory"></div>
+                </div>
+            </div>
+
+            <div id="quizScreen" class="screen">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="question-info">
+                    <span id="questionNumber">問題 1/10</span>
+                    <span id="categoryLabel">カテゴリ: </span>
+                </div>
+                
+                <div class="question-container">
+                    <h2 id="questionText"></h2>
+                    <div id="answerOptions" class="answer-options"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="submitAnswer" onclick="submitAnswer()" class="btn btn-primary" disabled>回答する</button>
+                    <button id="nextQuestion" onclick="nextQuestion()" class="btn btn-primary" style="display: none;">次の問題へ</button>
+                    <button onclick="quitQuiz()" class="btn btn-secondary">終了する</button>
+                </div>
+                
+                <div id="feedback" class="feedback"></div>
+            </div>
+
+            <div id="resultScreen" class="screen">
+                <h2>テスト結果</h2>
+                <div class="result-summary">
+                    <div class="score-circle">
+                        <span id="finalScore">0%</span>
+                    </div>
+                    <div class="result-details">
+                        <p>正解数: <span id="correctCount">0</span> / <span id="totalCount">0</span></p>
+                        <p>所要時間: <span id="timeTaken">0:00</span></p>
+                    </div>
+                </div>
+                
+                <div class="result-breakdown">
+                    <h3>問題別結果</h3>
+                    <div id="questionResults"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button onclick="retryQuiz()" class="btn btn-primary">同じ問題をもう一度</button>
+                    <button onclick="backToStart()" class="btn btn-secondary">問題選択に戻る</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
