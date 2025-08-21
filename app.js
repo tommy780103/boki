@@ -9,16 +9,68 @@ let currentCategory = 'all';
 function loadStudyHistory() {
     const history = JSON.parse(localStorage.getItem('studyHistory') || '[]');
     const historyHtml = history.slice(0, 5).map(item => `
-        <div class="history-item">
+        <div class="history-item" onclick="showHistoryDetail(${item.id})" style="cursor: pointer;">
             <span class="date">${new Date(item.date).toLocaleDateString('ja-JP')}</span>
             <span>${item.category === 'all' ? '全範囲' : getCategoryName(item.category)}</span>
             <span class="score">${item.score}%</span>
+            <span style="color: #667eea; font-size: 12px;">詳細 ▶</span>
         </div>
     `).join('');
     
     document.getElementById('studyHistory').innerHTML = historyHtml || '<p style="color: #999;">まだ学習履歴がありません</p>';
     
     updateOverallStats();
+}
+
+function showHistoryDetail(historyId) {
+    const history = JSON.parse(localStorage.getItem('studyHistory') || '[]');
+    const item = history.find(h => h.id === historyId);
+    
+    if (!item || !item.details) {
+        alert('詳細情報がありません');
+        return;
+    }
+    
+    // 履歴詳細画面を作成
+    const detailHtml = `
+        <div id="historyDetailScreen" class="screen active">
+            <h2>学習履歴詳細</h2>
+            <div class="history-detail-header">
+                <p>日時: ${new Date(item.date).toLocaleString('ja-JP')}</p>
+                <p>カテゴリ: ${item.category === 'all' ? '全範囲' : getCategoryName(item.category)}</p>
+                <p>スコア: ${item.score}% (${item.correctCount}/${item.totalQuestions}問正解)</p>
+            </div>
+            <div class="history-detail-questions">
+                ${item.details.map((detail, index) => `
+                    <div class="history-question-detail ${detail.isCorrect ? 'correct' : 'incorrect'}">
+                        <h3>問題${index + 1}: ${detail.isCorrect ? '⭕ 正解' : '❌ 不正解'}</h3>
+                        <p class="question-text">${detail.question}</p>
+                        <div class="answer-detail">
+                            <p><strong>あなたの回答:</strong> ${detail.selectedAnswerText}</p>
+                            ${!detail.isCorrect ? `<p><strong>正解:</strong> ${detail.correctAnswerText}</p>` : ''}
+                            <p class="explanation"><strong>解説:</strong> ${detail.explanation}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="action-buttons">
+                <button onclick="backToStart()" class="btn btn-primary">ホームに戻る</button>
+            </div>
+        </div>
+    `;
+    
+    // 既存の画面を非表示にして詳細画面を表示
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    
+    // 詳細画面を追加または更新
+    const existingDetail = document.getElementById('historyDetailScreen');
+    if (existingDetail) {
+        existingDetail.outerHTML = detailHtml;
+    } else {
+        document.querySelector('main').insertAdjacentHTML('beforeend', detailHtml);
+    }
 }
 
 function updateOverallStats() {
@@ -134,8 +186,11 @@ function submitAnswer() {
         questionId: question.id,
         question: question.question,
         selectedAnswer: selectedAnswer,
+        selectedAnswerText: question.options[selectedAnswer],
         correctAnswer: question.correctAnswer,
-        isCorrect: isCorrect
+        correctAnswerText: question.options[question.correctAnswer],
+        isCorrect: isCorrect,
+        explanation: question.explanation
     });
     
     if (isCorrect) {
@@ -161,7 +216,15 @@ function submitAnswer() {
     `;
     
     document.getElementById('submitAnswer').style.display = 'none';
-    document.getElementById('nextQuestion').style.display = 'inline-block';
+    
+    // 最後の問題の場合は「結果を見る」ボタンを表示
+    const nextBtn = document.getElementById('nextQuestion');
+    if (currentQuestionIndex === currentQuiz.length - 1) {
+        nextBtn.textContent = '結果を見る';
+    } else {
+        nextBtn.textContent = '次の問題へ';
+    }
+    nextBtn.style.display = 'inline-block';
 }
 
 function nextQuestion() {
@@ -200,13 +263,17 @@ function showResults() {
 function saveToHistory(finalScore) {
     const history = JSON.parse(localStorage.getItem('studyHistory') || '[]');
     
-    history.unshift({
+    const historyItem = {
+        id: Date.now(),
         date: new Date().toISOString(),
         category: currentCategory,
         score: finalScore,
         correctCount: score,
-        totalQuestions: currentQuiz.length
-    });
+        totalQuestions: currentQuiz.length,
+        details: answers
+    };
+    
+    history.unshift(historyItem);
     
     if (history.length > 20) {
         history.pop();
