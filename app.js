@@ -107,6 +107,7 @@ function loadQuestion() {
     
     selectedAnswer = null;
     document.getElementById('submitAnswer').disabled = true;
+    document.getElementById('submitAnswer').style.display = 'inline-block';
     document.getElementById('nextQuestion').style.display = 'none';
     document.getElementById('feedback').classList.remove('show');
 }
